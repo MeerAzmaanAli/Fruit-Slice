@@ -1,6 +1,5 @@
 body{
     background-color: rgb(165, 104, 42);
-    overflow: hidden;
     z-index: 0;
 }
 #scoreDisplay {
