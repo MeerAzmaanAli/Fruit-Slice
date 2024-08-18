@@ -16,12 +16,15 @@ backgroundImage.src = 'bgN.png';
 
 
 let fruits = [];
+let fxList = [];
 let score = 0;
 let isStarted = false;
 let timerInterval;
 let timeLeft = 30; 
 let gameInterval;
 let animationFrameId;
+let updateInterval;
+let vx;
 
 const fruitSprites = ["public/fruits/apple.png","public/fruits/avocado.png","public/fruits/bananas.png","public/fruits/mango.png","public/fruits/orange.png","public/fruits/strawberry.png"];
 
@@ -84,18 +87,18 @@ function spawnFruit() {
 
         x = Math.random() * canvas.width;
         y = canvas.height -30; 
-        initialVelocityX = (Math.random() - 0.5) * 15;
+        initialVelocityX = (Math.random() - 0.5) * vx+5;
         initialVelocityY = -(5 + Math.random() * 20); 
     } else if (side === 1) {
 
         x = 50; 
         y = Math.random() * canvas.height;
-        initialVelocityX = (5 + Math.random() * 10);
+        initialVelocityX = (5 + Math.random() * vx);
         initialVelocityY = -(Math.random() * 5);
     } else {
         x =canvas.width-50; 
         y = Math.random() * canvas.height;
-        initialVelocityX = (5 + Math.random() * 10); 
+        initialVelocityX = (5 + Math.random() * vx); 
         initialVelocityY = -(Math.random() * 5);
     }
 
@@ -117,6 +120,14 @@ function updateGame() {
 function gameLoop() {
     updateGame();
     animationFrameId = requestAnimationFrame(gameLoop);
+
+    // Update and draw all FX
+    fxList.forEach((fx, index) => {
+        fx.draw(ctx);
+        if (fx.isFinished()) {
+            fxList.splice(index, 1);  // Remove finished effects from the list
+        }
+    });
 }
 
 function handleSlice(x, y) {
@@ -124,6 +135,7 @@ function handleSlice(x, y) {
         const dist = Math.hypot(x - fruit.x, y - fruit.y);
         if (dist < fruit.radius && !fruit.isSliced) {
             fruit.slice();
+            fxList.push(new SlashFX(fruit.x - 20, fruit.y - 20, fruit.x + 20, fruit.y + 20));
         }
     });
 }
@@ -157,6 +169,7 @@ startBtn.addEventListener('click', function(){
 function startGame() {
     if (!isStarted) {
         isStarted = true;
+        setAttributes();
         startBtn.style.display = 'none';
         gameOverMessage.style.display = 'none';
         menuimg.style.display = 'none';
@@ -166,11 +179,12 @@ function startGame() {
         timeLeft = 30;
         scoreDisplay.textContent = `Score: ${score}`;
         fruits = [];
+
         clearInterval(gameInterval); 
         clearInterval(timerInterval);
-        gameInterval = setInterval(spawnFruit, 500);
+        gameInterval = setInterval(spawnFruit, updateInterval);
         gameLoop();
-    }
+}
 }
 function gameOver(){
     clearInterval(gameInterval);
@@ -186,10 +200,46 @@ function gameOver(){
     
 }
 
+class SlashFX {
+    constructor(x1, y1, x2, y2) {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.opacity = 1.0; // Initial opacity
+        this.fadeSpeed = 0.1; // Speed at which the slash fades out
+        this.lineWidth = 10; // Initial width of the slash
+    }
 
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // White color for the slash
+        ctx.lineWidth = this.lineWidth;
+        ctx.lineCap = 'round'; // Rounded ends for a smoother slash
+        ctx.beginPath();
+        ctx.moveTo(this.x1, this.y1);
+        ctx.lineTo(this.x2, this.y2);
+        ctx.stroke();
+        ctx.restore();
 
+        // Update the effect (fade out and narrow the line)
+        this.opacity -= this.fadeSpeed;
+        this.lineWidth -= 0.5;
+    }
 
-
-
-
+    isFinished() {
+        return this.opacity <= 0 || this.lineWidth <= 0;
+    }
+}
+function setAttributes(){
+    const k = 728000; 
+    const vk = 5000;
+    const a = canvas.width;   
+    const b = k/a;
+    updateInterval=b;
+    vx=vk/b;
+    console.log(b);
+    console.log(vx);
+}
 
