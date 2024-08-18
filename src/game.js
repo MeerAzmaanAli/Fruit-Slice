@@ -175,6 +175,8 @@ function startGame() {
         menuimg.style.display = 'none';
         title.style.display = 'none';
         bottom.style.display = 'flex';
+        scoreDisplay.style.display='flex';
+        timerDisplay.style.display='flex';
         score = 0;
         timeLeft = 30;
         scoreDisplay.textContent = `Score: ${score}`;

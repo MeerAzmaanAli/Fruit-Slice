@@ -1,14 +1,11 @@
 body{
     background-color: rgb(165, 104, 42);
-<<<<<<< HEAD
-
-=======
->>>>>>> 7831f3a092262a6eca952fc1ae01772ecc070def
     z-index: 0;
 }
 #scoreDisplay {
     position: absolute;
     justify-content: center;
+    display: none;
     top: 8px;
     left: 10px;
     width: 200px;
@@ -42,6 +39,7 @@ body{
 }
 #timerDisplay {
     position: absolute;
+    display: none;
     top: 10px;
     right: 30px;
     font-size: 24px;
