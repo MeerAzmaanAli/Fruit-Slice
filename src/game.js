@@ -107,7 +107,7 @@ function spawnFruit() {
 
 function updateGame() {
     
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
     fruits.forEach((fruit, index) => {
         fruit.update();
@@ -121,11 +121,11 @@ function gameLoop() {
     updateGame();
     animationFrameId = requestAnimationFrame(gameLoop);
 
-    // Update and draw all FX
+    
     fxList.forEach((fx, index) => {
         fx.draw(ctx);
         if (fx.isFinished()) {
-            fxList.splice(index, 1);  // Remove finished effects from the list
+            fxList.splice(index, 1); 
         }
     });
 }
@@ -206,24 +206,24 @@ class SlashFX {
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
-        this.opacity = 1.0; // Initial opacity
-        this.fadeSpeed = 0.1; // Speed at which the slash fades out
-        this.lineWidth = 10; // Initial width of the slash
+        this.opacity = 1.0; 
+        this.fadeSpeed = 0.1;
+        this.lineWidth = 10; 
     }
 
     draw(ctx) {
         ctx.save();
         ctx.globalAlpha = this.opacity;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // White color for the slash
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; 
         ctx.lineWidth = this.lineWidth;
-        ctx.lineCap = 'round'; // Rounded ends for a smoother slash
+        ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(this.x1, this.y1);
         ctx.lineTo(this.x2, this.y2);
         ctx.stroke();
         ctx.restore();
 
-        // Update the effect (fade out and narrow the line)
+        
         this.opacity -= this.fadeSpeed;
         this.lineWidth -= 0.5;
     }
