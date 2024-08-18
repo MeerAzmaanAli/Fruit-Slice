@@ -5,13 +5,14 @@ const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startButton');
 const gameOverMessage = document.getElementById('gameOverMessage');
 const timerDisplay = document.getElementById('timerDisplay');
+const bottom = document.getElementById('bottom');
 
-canvas.width = window.innerWidth-20;
-canvas.height = window.innerHeight-20;
+canvas.width = window.innerWidth-30;
+canvas.height = window.innerHeight-30;
 
 
 const backgroundImage = new Image();
-backgroundImage.src = 'bg.png';
+backgroundImage.src = 'bgN.png';
 
 
 let fruits = [];
@@ -34,11 +35,13 @@ const started = false;
 const scoreDisplay = document.getElementById('scoreDisplay');
 
 class Fruit {
-    constructor(x, y, speed) {
+    constructor(x, y, initialVelocityX, initialVelocityY) {
         this.x = x;
         this.y = y;
-        this.speed = speed;
-        this.radius = 30;
+        this.velocityX = initialVelocityX;
+        this.velocityY = initialVelocityY;
+        this.gravity = 0.2; 
+        this.radius = 50;
         this.sprite = loadedSprites[Math.floor(Math.random() * loadedSprites.length)];
         this.isSliced = false;
     }
@@ -50,7 +53,20 @@ class Fruit {
     }
 
     update() {
-        this.y += this.speed;
+        this.velocityY += this.gravity; 
+        this.x += this.velocityX;
+        this.y += this.velocityY; 
+
+   
+        if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+            this.velocityX = -this.velocityX; 
+        }
+
+      
+        if (this.y - this.radius > canvas.height) {
+            this.isSliced = true; 
+        }
+
         this.draw();
     }
 
@@ -62,9 +78,28 @@ class Fruit {
 }
 
 function spawnFruit() {
-    const x = Math.random() * canvas.width;
-    const speed = 2 + Math.random() * 3;
-    fruits.push(new Fruit(x, 0, speed));
+    const side = Math.floor(Math.random() * 2);
+    let x, y, initialVelocityX, initialVelocityY;
+    if (side === 0) {
+
+        x = Math.random() * canvas.width;
+        y = canvas.height -30; 
+        initialVelocityX = (Math.random() - 0.5) * 15;
+        initialVelocityY = -(5 + Math.random() * 20); 
+    } else if (side === 1) {
+
+        x = 50; 
+        y = Math.random() * canvas.height;
+        initialVelocityX = (5 + Math.random() * 10);
+        initialVelocityY = -(Math.random() * 5);
+    } else {
+        x =canvas.width-50; 
+        y = Math.random() * canvas.height;
+        initialVelocityX = (5 + Math.random() * 10); 
+        initialVelocityY = -(Math.random() * 5);
+    }
+
+    fruits.push(new Fruit(x, y, initialVelocityX, initialVelocityY));
 }
 
 function updateGame() {
@@ -126,13 +161,14 @@ function startGame() {
         gameOverMessage.style.display = 'none';
         menuimg.style.display = 'none';
         title.style.display = 'none';
+        bottom.style.display = 'flex';
         score = 0;
         timeLeft = 30;
         scoreDisplay.textContent = `Score: ${score}`;
         fruits = [];
         clearInterval(gameInterval); 
         clearInterval(timerInterval);
-        gameInterval = setInterval(spawnFruit, 1000);
+        gameInterval = setInterval(spawnFruit, 500);
         gameLoop();
     }
 }
@@ -145,6 +181,7 @@ function gameOver(){
     gameOverMessage.style.display = 'block';
     menuimg.style.display = 'flex';
     title.style.display = 'none';
+    bottom.style.display = 'none';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
 }
