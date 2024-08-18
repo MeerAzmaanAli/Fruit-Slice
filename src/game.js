@@ -182,7 +182,7 @@ function startGame() {
 
         clearInterval(gameInterval); 
         clearInterval(timerInterval);
-        gameInterval = setInterval(spawnFruit, updateInterval);
+        gameInterval = setInterval(spawnFruit, updateInterval+100);
         gameLoop();
 }
 }
