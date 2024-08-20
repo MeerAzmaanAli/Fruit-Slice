@@ -1,18 +1,27 @@
 const canvas = document.getElementById('gameCanvas');
 const menuimg = document.getElementById('menu');
+const body = document.getElementById('body');
 const title = document.getElementById('title');
 const ctx = canvas.getContext('2d');
-const startBtn = document.getElementById('startButton');
+const startBtn = document.getElementById('singlePlayer');
 const gameOverMessage = document.getElementById('gameOverMessage');
-const timerDisplay = document.getElementById('timerDisplay');
+const x1 = document.getElementById('x1');
+const x2 = document.getElementById('x2');
+const x3 = document.getElementById('x3');
+
 const bottom = document.getElementById('bottom');
+const menu = document.getElementById('menu');
 
 canvas.width = window.innerWidth-30;
 canvas.height = window.innerHeight-30;
 
 
 const backgroundImage = new Image();
-backgroundImage.src = 'bgN.png';
+backgroundImage.src = 'BG.png';
+
+const splash = new Image();
+splash.src = 'public/splash.png';
+splash.opacity=0.7;
 
 
 let fruits = [];
@@ -25,8 +34,9 @@ let gameInterval;
 let animationFrameId;
 let updateInterval;
 let vx;
+let lives = 3;
 
-const fruitSprites = ["public/fruits/apple.png","public/fruits/avocado.png","public/fruits/bananas.png","public/fruits/mango.png","public/fruits/orange.png","public/fruits/strawberry.png"];
+const fruitSprites = ["public/fruits/boom.png","public/fruits/apple.png","public/fruits/avocado.png","public/fruits/bananas.png","public/fruits/mango.png","public/fruits/orange.png","public/fruits/strawberry.png"];
 
 const loadedSprites = fruitSprites.map(src => {
     const img = new Image();
@@ -38,14 +48,16 @@ const started = false;
 const scoreDisplay = document.getElementById('scoreDisplay');
 
 class Fruit {
-    constructor(x, y, initialVelocityX, initialVelocityY) {
+    constructor(x, y, initialVelocityX, initialVelocityY,spriteindex) {
         this.x = x;
         this.y = y;
         this.velocityX = initialVelocityX;
         this.velocityY = initialVelocityY;
         this.gravity = 0.2; 
         this.radius = 50;
-        this.sprite = loadedSprites[Math.floor(Math.random() * loadedSprites.length)];
+        this.spriteindex =spriteindex;
+        this.sprite =loadedSprites[this.spriteindex];
+        
         this.isSliced = false;
     }
 
@@ -74,35 +86,43 @@ class Fruit {
     }
 
     slice() {
-        this.isSliced = true;
-        score += 10;
-        scoreDisplay.textContent = `Score: ${score}`;
+        if(this.spriteindex==0){
+            this.isSliced=true
+            gameOver();
+        }else{
+            this.isSliced = true;
+            score += 10;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+        
     }
 }
 
 function spawnFruit() {
     const side = Math.floor(Math.random() * 2);
-    let x, y, initialVelocityX, initialVelocityY;
+    let x, y, initialVelocityX, initialVelocityY,sprite;
+    spriteindex= Math.floor(Math.random() * loadedSprites.length);
+    
+
     if (side === 0) {
 
         x = Math.random() * canvas.width;
         y = canvas.height -30; 
-        initialVelocityX = (Math.random() - 0.5) * vx+5;
-        initialVelocityY = -(5 + Math.random() * 20); 
+        initialVelocityX = (Math.random() - 0.5) * 15;
+        initialVelocityY = -(5 + Math.random() * 12); 
     } else if (side === 1) {
 
         x = 50; 
         y = Math.random() * canvas.height;
-        initialVelocityX = (5 + Math.random() * vx);
-        initialVelocityY = -(Math.random() * 5);
+        initialVelocityX = (5 + Math.random() * 10);
+        initialVelocityY = -(Math.random() * 7);
     } else {
         x =canvas.width-50; 
         y = Math.random() * canvas.height;
-        initialVelocityX = (5 + Math.random() * vx); 
-        initialVelocityY = -(Math.random() * 5);
+        initialVelocityX = (5 + Math.random() * 10); 
+        initialVelocityY = -(Math.random() * 7);
     }
-
-    fruits.push(new Fruit(x, y, initialVelocityX, initialVelocityY));
+    fruits.push(new Fruit(x, y, initialVelocityX, initialVelocityY,spriteindex));
 }
 
 function updateGame() {
@@ -113,6 +133,13 @@ function updateGame() {
         fruit.update();
         if (fruit.y > canvas.height) {
             fruits.splice(index, 1);
+            if(fruit.spriteindex !=0){
+                lives -=0.25;
+                Handlelives();
+                console.log(lives);
+            }
+           
+            Handlelives();
         }
     });
 }
@@ -121,7 +148,7 @@ function gameLoop() {
     updateGame();
     animationFrameId = requestAnimationFrame(gameLoop);
 
-    
+    Handlelives();
     fxList.forEach((fx, index) => {
         fx.draw(ctx);
         if (fx.isFinished()) {
@@ -133,7 +160,7 @@ function gameLoop() {
 function handleSlice(x, y) {
     fruits.forEach(fruit => {
         const dist = Math.hypot(x - fruit.x, y - fruit.y);
-        if (dist < fruit.radius && !fruit.isSliced) {
+        if (dist < fruit.radius+20 && !fruit.isSliced) {
             fruit.slice();
             fxList.push(new SlashFX(fruit.x - 20, fruit.y - 20, fruit.x + 20, fruit.y + 20));
         }
@@ -150,33 +177,20 @@ canvas.addEventListener('touchstart', (event) => {
     handleSlice(touch.clientX, touch.clientY);
 });
 
-function startTimer() {
-    timerDisplay.textContent = `Time: ${timeLeft}`;
-    timerInterval = setInterval(() => {
-        timeLeft--; 
-        timerDisplay.textContent = `Time: ${timeLeft}`;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            gameOver();
-        }
-    }, 1000);
-}
 startBtn.addEventListener('click', function(){
     startGame();
-    startTimer();
 });
 
 function startGame() {
     if (!isStarted) {
         isStarted = true;
-        setAttributes();
-        startBtn.style.display = 'none';
+        menu.style.display = 'none';
         gameOverMessage.style.display = 'none';
-        menuimg.style.display = 'none';
-        title.style.display = 'none';
         bottom.style.display = 'flex';
         scoreDisplay.style.display='flex';
-        timerDisplay.style.display='flex';
+        body.style.backgroundImage='none'
+        body.style.backgroundColor='black';
+        resetLives();
         score = 0;
         timeLeft = 30;
         scoreDisplay.textContent = `Score: ${score}`;
@@ -184,25 +198,47 @@ function startGame() {
 
         clearInterval(gameInterval); 
         clearInterval(timerInterval);
-        gameInterval = setInterval(spawnFruit, updateInterval+100);
+        gameInterval = setInterval(spawnFruit, 700);
         gameLoop();
 }
 }
+
 function gameOver(){
     clearInterval(gameInterval);
-    clearInterval(timerInterval);
     cancelAnimationFrame(animationFrameId);
+    scoreDisplay.textContent = `Last Score: ${score}`;
     isStarted = false;
-    startButton.style.display = 'block';
+    menu.style.display = 'flex';
     gameOverMessage.style.display = 'block';
-    menuimg.style.display = 'flex';
-    title.style.display = 'none';
     bottom.style.display = 'none';
+    body.style.backgroundImage='url(BG.png)'
+    body.style.backgroundColor='none';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
 }
+function Handlelives(){
+    if(lives == 2 ){
+        x1.style.backgroundImage='url(public/xx1.png)';
+    }else if(lives==1){
+        x1.style.backgroundImage='url(public/xx1.png)';
+        x2.style.backgroundImage='url(public/xx2.png)';
+    }else if(lives == 0){
+        x1.style.backgroundImage='url(public/xx1.png)';
+        x2.style.backgroundImage='url(public/xx2.png)';
+        x3.style.backgroundImage='url(public/xx3.png)';
+        gameOver();
+    }
+    
+}
+function resetLives(){
+    lives = 3;
+    x1.style.backgroundImage='url(public/x1.png)';
+    x2.style.backgroundImage='url(public/x2.png)';
+    x3.style.backgroundImage='url(public/x3.png)';
+}
 
 class SlashFX {
+    
     constructor(x1, y1, x2, y2) {
         this.x1 = x1;
         this.y1 = y1;
@@ -216,7 +252,7 @@ class SlashFX {
     draw(ctx) {
         ctx.save();
         ctx.globalAlpha = this.opacity;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; 
+        ctx.strokeStyle = 'rgba(263	41	0, 0.8)'; 
         ctx.lineWidth = this.lineWidth;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -226,8 +262,10 @@ class SlashFX {
         ctx.restore();
 
         
-        this.opacity -= this.fadeSpeed;
+        this.opacity -= this.fadeSpeed/1000;
         this.lineWidth -= 0.5;
+        ctx.drawImage(splash, this.x1, this.y1,100,100);
+
     }
 
     isFinished() {

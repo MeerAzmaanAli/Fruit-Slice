@@ -1,86 +1,168 @@
 body{
-    background-color: rgb(165, 104, 42);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    background-image: url(Bgg.png);
+    background-color: none;
+    background-size: 100% 100%;
+
+    background-attachment: fixed;
+    background-position: center;
     z-index: 0;
+    
+}
+#fruitlogo{
+    position: absolute;
+    justify-content: center;
+    left: 33%;
+    top:10px;
+    width: 35%;
+    height: 35%;
 }
 #scoreDisplay {
     position: absolute;
+    align-items: center ;
     justify-content: center;
     display: none;
     top: 8px;
     left: 10px;
+    padding: 10px;
+    border-radius: 30px;
+    background-image: url(public/button.png);
+    border-bottom: 5px solid #3f2900;
+
     width: 200px;
     height: 50px;
-    font-size: 30px;
-    background-color: brown;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    z-index: 2;
-}
-#startButton {
-    position: absolute;
-    display: block;
-    align-items: center;
-    bottom: 20%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px 10px;
     font-size: 25px;
-    font-family: Arial, sans-serif;
-    background-color:rgb(5, 161, 252);
+    color: #7bff00;
+    font-family:cursive;
 
-    color: white;
+}
+#menu{
+    display: flex;
+    position: absolute;
+    justify-content: center;
+    top: 40%;
+    left: 100px;
+    gap: 800px;
+   
+}
+@keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+}
+
+#singlePlayer {
+
+    width: 250px;
+    height: 250px;
+    background: none;
     border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    z-index: 4;
+    
+    img{
+        width: 250px;
+        height: 250px;
+        opacity: 0.8;
+        animation: rotate 5s linear infinite;
+    }
+
+    &:hover{
+        img{
+            opacity: 1;
+        }
+    }
+}
+#multiPlayer{
+    background: none;
+    width: 250px;
+    height: 250px;
+    border: none;
+        
+    
+    img{
+        width: 250px;
+        height: 250px;
+        opacity: 0.8;
+        animation: rotate 5s linear infinite;
+    }
+    &:hover{
+        img{
+            
+            opacity: 1;
+        }
+    }
 }
 #startButton:hover {
     background-color:rgb(5, 127, 198);
 }
 #timerDisplay {
-    position: absolute;
     display: none;
     top: 10px;
     right: 30px;
-    font-size: 24px;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    z-index: 3;
+    font-size: 30px;
+    color: #ffb700;
+    font-family:cursive;
+    padding: 10px;
+    border-radius: 30px;
+    background-image: url(public/button.png);
+    border-bottom: 5px solid #3f2900;
+    position: absolute;
+    align-items: center ;
+    justify-content: center;
+
 }
 #gameOverMessage {
     position: absolute;
     display: none;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 36px;
-    color: #fff9f9;
-    background: rgba(0, 0, 0, 0.955);
+    top: 22%;
+    left: 33%;
     padding: 20px;
     border-radius: 10px;
-    z-index: 4;
-}
-#menu{
-    width: 100%;
-    height: 80%;
-    display: flex;
-    z-index: 1;
-}
-#title{
-    position: absolute;
-    display: block;
-    align-items: center;
-    top: 10%;
-    left: 40%;
-    font-size: 70px;
-    color: #fff200;
-    font-family: fantasy;
-    z-index: 4;
+
+    img{
+        width: 100%;
+        height: 100%;
+    }
 
 }
 #bottom{
     width: 100%;
     height: 80%;
     display: none;
-    z-index: 4;
+
+}
+#lives{
+    display: flex;
+    position: absolute;
+    top: 10px;
+    right: 30px;
+}
+#x1{
+    width: 30px; /* Set the width */
+    height: 30px; 
+   background-image: url(public/x1.png);
+   background-size: 100% 100%;
+   background-position: center;
+   background-size: cover; /* Adjusts the image to cover the entire div */
+}
+#x2{
+    width: 30px; /* Set the width */
+    height: 30px; 
+    background-image: url(public/x2.png);
+    background-size: 100% 100%;
+    background-position: center;
+    background-size: cover; /* Adjusts the image to cover the entire div */
+}
+#x3{
+    width: 30px; /* Set the width */
+    height: 30px; 
+    background-image: url(public/x3.png);
+    background-size: 100% 100%;
+    background-position: center;
+    background-size: cover; /* Adjusts the image to cover the entire div */
 }
