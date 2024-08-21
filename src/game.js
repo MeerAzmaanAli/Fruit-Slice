@@ -21,7 +21,7 @@ backgroundImage.src = 'BG.png';
 
 const splash = new Image();
 splash.src = 'public/splash.png';
-splash.opacity=0.7;
+splash.opacity=0.5;
 
 
 let fruits = [];
@@ -34,11 +34,35 @@ let gameInterval;
 let animationFrameId;
 let updateInterval;
 let vx;
-let lives = 3;
+let lives = 6;
+let isMouseDown = false;
+let lastMousePosition = { x: 0, y: 0 };
 
-const fruitSprites = ["public/fruits/boom.png","public/fruits/apple.png","public/fruits/avocado.png","public/fruits/bananas.png","public/fruits/mango.png","public/fruits/orange.png","public/fruits/strawberry.png"];
-
+const fruitSprites = [
+    "public/fruits/boom.png",
+    "public/fruits/apple.png",
+    "public/fruits/avocado.png",
+    "public/fruits/bananas.png",
+    "public/fruits/mango.png",
+    "public/fruits/orange.png",
+    "public/fruits/strawberry.png"
+];
+const SlicedSprites = [
+    "public/fruits/boom-1.png",
+    "public/fruits/apple-1.png",
+    "public/fruits/avocado-1.png",
+    "public/fruits/bananas-1.png",
+    "public/fruits/mango-1.png",
+    "public/fruits/orange-1.png",
+    "public/fruits/strawberry-1.png",
+];
+    
 const loadedSprites = fruitSprites.map(src => {
+    const img = new Image();
+    img.src = src;
+    return img;
+});
+const loadedSliced = SlicedSprites.map(src => {
     const img = new Image();
     img.src = src;
     return img;
@@ -57,13 +81,19 @@ class Fruit {
         this.radius = 50;
         this.spriteindex =spriteindex;
         this.sprite =loadedSprites[this.spriteindex];
+        this.spriteLeft=loadedSliced[spriteindex];
+        this.spriteRight;
         
         this.isSliced = false;
     }
+   
 
     draw() {
         if (!this.isSliced) {
             ctx.drawImage(this.sprite, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+        }else if(this.isSliced){
+            ctx.drawImage(this.spriteLeft, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+            
         }
     }
 
@@ -97,7 +127,6 @@ class Fruit {
         
     }
 }
-
 function spawnFruit() {
     const side = Math.floor(Math.random() * 2);
     let x, y, initialVelocityX, initialVelocityY,sprite;
@@ -107,22 +136,23 @@ function spawnFruit() {
     if (side === 0) {
 
         x = Math.random() * canvas.width;
-        y = canvas.height -30; 
+        y = canvas.height-100; 
         initialVelocityX = (Math.random() - 0.5) * 15;
         initialVelocityY = -(5 + Math.random() * 12); 
     } else if (side === 1) {
 
         x = 50; 
-        y = Math.random() * canvas.height;
+        y = Math.random() * (canvas.height-100);
         initialVelocityX = (5 + Math.random() * 10);
         initialVelocityY = -(Math.random() * 7);
     } else {
         x =canvas.width-50; 
-        y = Math.random() * canvas.height;
+        y = Math.random() * (canvas.height-100);
         initialVelocityX = (5 + Math.random() * 10); 
         initialVelocityY = -(Math.random() * 7);
     }
     fruits.push(new Fruit(x, y, initialVelocityX, initialVelocityY,spriteindex));
+    
 }
 
 function updateGame() {
@@ -134,12 +164,15 @@ function updateGame() {
         if (fruit.y > canvas.height) {
             fruits.splice(index, 1);
             if(fruit.spriteindex !=0){
-                lives -=0.25;
-                Handlelives();
-                console.log(lives);
+                if(!fruit.isSliced){
+                    lives -=0.25;
+                    Handlelives();
+                    console.log(lives);
+                }
+               
             }
            
-            Handlelives();
+            
         }
     });
 }
@@ -157,20 +190,35 @@ function gameLoop() {
     });
 }
 
-function handleSlice(x, y) {
+function handleSlice(x1, y1, x2, y2) {
     fruits.forEach(fruit => {
-        const dist = Math.hypot(x - fruit.x, y - fruit.y);
-        if (dist < fruit.radius+20 && !fruit.isSliced) {
-            fruit.slice();
-            fxList.push(new SlashFX(fruit.x - 20, fruit.y - 20, fruit.x + 20, fruit.y + 20));
+        if (!fruit.isSliced) {
+            // Check if the fruit intersects with the line between the two mouse positions
+            const dist = pointToLineDistance(fruit.x, fruit.y, x1, y1, x2, y2);
+            if (dist < fruit.radius) {
+                fruit.slice();
+                fxList.push(new SlashFX(x1, y1, x2+100, y2));
+            }
         }
     });
 }
 
 
 canvas.addEventListener('mousedown', (event) => {
-    handleSlice(event.clientX, event.clientY);
+    isMouseDown = true;
+    lastMousePosition = { x: event.clientX, y: event.clientY };
 });
+canvas.addEventListener('mouseup', () => {
+    isMouseDown = false;
+});
+canvas.addEventListener('mousemove', (event) => {
+    if (isMouseDown) {
+        const currentMousePosition = { x: event.clientX, y: event.clientY };
+        handleSlice(currentMousePosition.x, currentMousePosition.y, lastMousePosition.x, lastMousePosition.y);
+        lastMousePosition = currentMousePosition;
+    }
+});
+
 
 canvas.addEventListener('touchstart', (event) => {
     const touch = event.touches[0];
@@ -195,7 +243,7 @@ function startGame() {
         timeLeft = 30;
         scoreDisplay.textContent = `Score: ${score}`;
         fruits = [];
-
+        bottom.style.opacity=0;
         clearInterval(gameInterval); 
         clearInterval(timerInterval);
         gameInterval = setInterval(spawnFruit, 1000);
@@ -252,7 +300,7 @@ class SlashFX {
     draw(ctx) {
         ctx.save();
         ctx.globalAlpha = this.opacity;
-        ctx.strokeStyle = 'rgba(263	41	0, 0.8)'; 
+        ctx.strokeStyle = 'rgba(40,16,9,0.7)'; 
         ctx.lineWidth = this.lineWidth;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -262,9 +310,9 @@ class SlashFX {
         ctx.restore();
 
         
-        this.opacity -= this.fadeSpeed/1000;
+        this.opacity -= this.fadeSpeed/10000;
         this.lineWidth -= 0.5;
-        ctx.drawImage(splash, this.x1, this.y1,100,100);
+        ctx.drawImage(splash, this.x1, this.y1,150,150 );
 
     }
 
@@ -282,4 +330,41 @@ function setAttributes(){
     console.log(b);
     console.log(vx);
 }
+function pointToLineDistance(px, py, x1, y1, x2, y2) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
 
+    const dot = A * C + B * D;
+    const len_sq = C * C + D * D;
+    const param = len_sq !== 0 ? dot / len_sq : -1;
+
+    let xx, yy;
+
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+
+    const dx = px - xx;
+    const dy = py - yy;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+function enterFullscreen() {
+    if (canvas.requestFullscreen) {
+        canvas.requestFullscreen();
+    } else if (canvas.mozRequestFullScreen) { // Firefox
+        canvas.mozRequestFullScreen();
+    } else if (canvas.webkitRequestFullscreen) { // Chrome, Safari, and Opera
+        canvas.webkitRequestFullscreen();
+    } else if (canvas.msRequestFullscreen) { // IE/Edge
+        canvas.msRequestFullscreen();
+    }
+}
